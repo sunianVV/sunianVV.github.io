@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://unpkg.com/leancloud-storage@4.12.2/dist/av-min.js"></script>
+    <style>
+
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        p{
+            text-align: center;
+            color: green;
+            font-size: 36px;
+        }
+        /*button{*/
+        /*    position: absolute;*/
+        /*    left: 50%;*/
+        /*    transform: translateX(-50%);*/
+        /*}*/
+        .nav{
+            margin-top: 60px;
+            position: relative;
+        }
+
+        .account {
+            text-align: center;
+            margin-top: 20px;;
+        }
+        .tip{
+            font-size: 16px;
+        }
+
+        .btn{
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .explain{
+            width: 1000px;
+            height: 500px;
+            text-align: left;
+            margin-top: 30px;
+            font-size: 16px;
+        }
+
+        .bottom{
+            text-align: center;
+            margin-top: 10px;
+        }
+
+
+    </style>
+
+</head>
+
+
+<body>
+<div class="nav">
+    <p>自动健康打卡</p>
+    <p class="tip">云端程序将会在每日早晨7点为您自动进行健康打卡操作，成功后会通过微信推送给您</p>
+</div>
+
+<div class="account">
+    输入工号：<input type="text" id="account1" value="271432">
+    输入VXUID：<input type="text" id="account2" value="UID_0qG7eNmOIt1dXrX1FvLZ7LEXwUxC">
+</div>
+
+<div class="btn">
+    <button onclick="getPreviousInfo()">自动打卡</button>
+</div>
+
+<div class="bottom">
+    <textarea class="explain">
+        使用说明：
+            1.输入工号 和 微信UID
+            2.点击 "自动打卡" 按钮
+            3.当浏览器弹出 "已成功设置每日自动打卡" 代表设置成功了,扔掉手机电脑什么都不用管了
+
+        微信UID获取办法：
+            微信关注公众号  WxPusher  然后点击 [我的] - [我的UID]
+            微信UID是为了打卡成功后，通过该公众号推送一条消息通知您打卡成功了
+
+        Q: 题目变了还能成功打卡吗？
+        A: 可以成功打卡，程序会每天判断题目是否发生变化，没变化，用上次答案打卡。
+           变化了，也用上次答案打卡（同样可以通过）
+
+        Q: 我可以知道题目发生了变化吗？
+        A: 可以，题目发生变化会微信推送告知您
+
+        Q: 题目变化后，我想用最新的答案做健康打卡怎么办？
+        A: 只需要重新手动打卡一次即可，第二天会用您最新的答案进行自动打卡（无需再次打开该网站设置）
+
+    </textarea>
+</div>
+
+<script>
+    AV.init({
+        appId: "AltAzzf7BhiRzw109IUYNfJd-MdYXbMMI",
+        appKey: "zNwXu2eLBIrkLBguzRM7q36p"
+        // serverURL: "https://altazzf7.api.lncldglobal.com"
+     });
+
+    // 获取之前的打卡信息
+    function getPreviousInfo() {
+        let account = document.getElementById("account1").value;
+        let uid     = document.getElementById('account2').value;
+
+        if (account != "" && uid != ""){
+            let url = "http://ics.chinasoftinc.com:30122/getHistoricalRecordParam.Action?lobNumber=" + account
+            fetch(url, {
+                method: "GET",
+            }).then(function(response) {
+                return response.json();
+            }).then(function (data) {
+
+                if (data.code === 0 && data.data.length > 0){
+                    // let userInfo = data.data[0];
+                    // userInfo.uid = uid;
+                    commitUserInfo(account, uid);
+                }else {
+                    alert("请检查工号正确性 或 UID是否输入");
+                }
+                // console.log(data);
+            }).catch(function (e){
+                console.log(e);
+                alert(e);
+            })
+        }else {
+            alert("请输入工号 或 UID");
+        }
+    }
+
+    function commitUserInfo(account, uid) {
+
+        // 先删除
+        const query = new AV.Query('UserInfo');
+        query.equalTo('account', account);
+        query.find().then((res) => {
+            // res 是包含满足条件的 usersInfo 对象的数组
+            for(let i = 0; i<res.length; i++){
+                // 删除
+                const todo = AV.Object.createWithoutData('UserInfo', res[i].id);
+                todo.destroy();
+            }
+
+            // 后添加
+            const UserInfo = AV.Object.extend('UserInfo');
+            const uInfo = new UserInfo();
+            uInfo.set('account', account);
+            uInfo.set('uid', uid);
+            uInfo.save().then((todo) => {
+                // console.log(`保存成功。objectId：${todo.id}`);
+                alert("已成功设置每日自动打卡")
+            }, (error) => {
+                // console.log(error);
+                alert("请检查网络，或者联系开发者，或再次尝试！！！")
+            });
+
+        });
+
+    }
+
+</script>
+</body>
+</html>
+
+
