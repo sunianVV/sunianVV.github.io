@@ -2,228 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>Title</title>
-    <script src="https://unpkg.com/leancloud-storage@4.12.2/dist/av-min.js"></script>
-    <style>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查找接口</title>
+    <script>
+        function findBalance() {
+            var address = document.getElementById("addressInput").value;
+            var apiUrl = "https://src20.woofswap.finance/src-20/balance?address=" + address;
 
-        body{
-
-        }
-        *{
-            margin: 0;
-            padding: 0;
-            font-family: '微软雅黑';
-        }
-        p{
-            text-align: center;
-            color: green;
-            font-size: 36px;
-        }
-
-        .nav{
-            margin-top: 60px;
-            position: relative;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    displayResult(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("发生错误，请查看控制台了解详情");
+                });
         }
 
-        .middle {
-            text-align: center;
-            margin-top: 20px;;
-        }
-        .tip{
-            font-size: 16px;
-        }
+        function displayResult(data) {
+            var resultContainer = document.getElementById("resultContainer");
 
-        .btn{
-            margin-top: 20px;
-            text-align: center;
-        }
+            // 清空之前的结果
+            resultContainer.innerHTML = "";
 
-        .explain{
-            width: 1000px;
-            height: 500px;
-            text-align: left;
-            margin-top: 30px;
-            font-size: 16px;
-        }
-
-        .bottom{
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .button1 {
-            -webkit-transition-duration: 0.4s;
-            transition-duration: 0.4s;
-            padding: 16px 32px;
-            text-align: center;
-            background-color: white;
-            color: black;
-            border: 2px solid #4CAF50;
-            border-radius:5px;
-        }
-
-        .button1:hover {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .tl-price-input{
-            width: 300px;
-            border: 1px solid #ccc;
-            padding: 7px 0;
-            background: #F4F4F7;
-            border-radius: 3px;
-            padding-left:5px;
-            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-            -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
-            -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
-        }
-        .tl-price-input:focus{
-            border-color: #4CAF50;
-            outline: 0;
-            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
-            box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
-        }
-    </style>
-
-</head>
-
-
-<body>
-<div class="nav">
-    <p>自动健康打卡</p>
-    <p class="tip">云端程序将会在每日早晨7点为您自动进行健康打卡操作，成功后会通过微信推送给您</p>
-</div>
-
-<div class="middle">
-    <input class="tl-price-input" type="text" placeholder="请输入员工工号" id="account1"><br><br>
-    <input class="tl-price-input" type="text" placeholder="请输入微信UID" id="account2">
-</div>
-
-<div class="btn">
-    <button class="button1" onclick="getPreviousInfo()">自动打卡</button>
-</div>
-
-<div class="bottom">
-    <textarea class="explain">
-        使用说明：
-            1.输入工号 和 微信UID
-            2.点击 "自动打卡" 按钮
-            3.当浏览器弹出 "已成功设置每日自动打卡" 代表设置成功了,扔掉手机电脑什么都不用管了
-
-        微信UID获取办法：
-            微信关注公众号  WxPusher  然后点击 [我的] - [我的UID]
-            微信UID是为了打卡成功后，通过该公众号推送一条消息通知您打卡成功了
-
-        Q: 题目变了还能成功打卡吗？
-        A: 可以成功打卡，程序会每天判断题目是否发生变化，没变化，用上次答案打卡。
-           变化了，也用上次答案打卡（同样可以通过）
-
-        Q: 我可以知道题目发生了变化吗？
-        A: 可以，题目发生变化会微信推送告知您
-
-        Q: 题目变化后，我想用最新的答案做健康打卡怎么办？
-        A: 只需要重新手动打卡一次即可，第二天会用您最新的答案进行自动打卡（无需再次打开该网站设置）
-
-    </textarea>
-</div>
-
-<script>
-    AV.init({
-        appId: "AltAzzf7BhiRzw109IUYNfJd-MdYXbMMI",
-        appKey: "zNwXu2eLBIrkLBguzRM7q36p"
-        // serverURL: "https://altazzf7.api.lncldglobal.com"
-     });
-
-    // 获取之前的打卡信息
-    function getPreviousInfo() {
-        let account = document.getElementById("account1").value.replace(/\b(0+)/gi, "") //去掉前面所有的0
-        let uid     = document.getElementById('account2').value;
-
-        if (account != "" && uid != ""){
-            let url = "http://ics.chinasoftinc.com:30122/getHistoricalRecordParam.Action?lobNumber=" + account
-            fetch(url, {
-                method: "GET",
-            }).then(function(response) {
-                return response.json();
-            }).then(function (data) {
-
-                if (data.code === 0 && data.data.length > 0){
-                    // let userInfo = data.data[0];
-                    // userInfo.uid = uid;
-                    commitUserInfo(account, uid);
-                }else {
-                    showToast("请检查工号正确性 或 UID是否输入",2000);
-                }
-                // console.log(data);
-            }).catch(function (e){
-                console.log(e);
-                showToast(e,3000);
-            })
-        }else {
-            showToast("请输入工号 或 UID",2000);
-
-        }
-    }
-
-    function commitUserInfo(account, uid) {
-
-        // 先删除
-        const query = new AV.Query('UserInfo');
-        query.equalTo('account', account);
-        query.find().then((res) => {
-            // res 是包含满足条件的 usersInfo 对象的数组
-            for(let i = 0; i<res.length; i++){
-                // 删除
-                const todo = AV.Object.createWithoutData('UserInfo', res[i].id);
-                todo.destroy();
+            // 检查接口返回的code是否为200，表示成功
+            if (data.code === 200) {
+                var responseObj = data.responseObj[0];
+                
+                // 创建并添加结果元素
+                var resultElement = document.createElement("div");
+                resultElement.innerHTML = `
+                    <p><strong>钱包地址：</strong> ${responseObj.walletAddress}</p>
+                    <p><strong>代币：</strong> ${responseObj.tick}</p>
+                    <p><strong>余额：</strong> ${responseObj.balance}</p>
+                `;
+                resultContainer.appendChild(resultElement);
+            } else {
+                alert("接口返回错误：" + data.msg);
             }
+        }
+    </script>
+</head>
+<body>
+    <h1>查找接口</h1>
+    <label for="addressInput">地址：</label>
+    <input type="text" id="addressInput" placeholder="输入地址">
+    <button onclick="findBalance()">查找</button>
 
-            // 后添加
-            const UserInfo = AV.Object.extend('UserInfo');
-            const uInfo = new UserInfo();
-            uInfo.set('account', account);
-            uInfo.set('uid', uid);
-            uInfo.save().then((todo) => {
-                // console.log(`保存成功。objectId：${todo.id}`);
-                alert("已成功设置每日自动打卡")
-            }, (error) => {
-                // console.log(error);
-                // alert("请检查网络，或者联系开发者，或再次尝试！！！")
-                showToast("请检查网络，或者联系开发者，或再次尝试！！！",3000);
-            });
-
-        });
-
-
-
-    }
-
-
-
-
-
-    function showToast(msg,duration){
-        duration=isNaN(duration)?3000:duration;
-        var m = document.createElement('div');
-        m.innerHTML = msg;
-        m.style.cssText="width:200px; min-width:180px; background:#000; opacity:0.6; height:auto;min-height: 30px; color:#fff; line-height:30px; text-align:center; border-radius:4px; position:fixed; top:30px; left:50%; transform:translateX(-50%); z-index:999999;";
-        document.body.appendChild(m);
-        setTimeout(function() {
-            var d = 0.5;
-            m.style.webkitTransition = '-webkit-transform ' + d + 's ease-in, opacity ' + d + 's ease-in';
-            m.style.opacity = '0';
-            setTimeout(function() { document.body.removeChild(m) }, d * 1000);
-        }, duration);
-    }
-
-
-</script>
+    <!-- 用于显示结果的容器 -->
+    <div id="resultContainer"></div>
 </body>
 </html>
-
-
-
