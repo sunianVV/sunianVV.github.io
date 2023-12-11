@@ -34,10 +34,13 @@
 
                 let res = 0
 
-                let num = parseInt(responseObj?.balance);
-                if (num > 0) {
-                    res = responseObj.balance / 10000000 
+                if (responseObj) {
+                    let num = parseInt(responseObj.balance);
+                    if (num > 0) {
+                        res = responseObj.balance / 10000000 
+                    }
                 }
+                
                 
                 
                 // 创建并添加结果元素
