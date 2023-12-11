@@ -30,13 +30,15 @@
             // 检查接口返回的code是否为200，表示成功
             if (data.code === 200) {
                 var responseObj = data.responseObj[0];
+
+                let res = responseObj.balance / 10000000
                 
                 // 创建并添加结果元素
                 var resultElement = document.createElement("div");
                 resultElement.innerHTML = `
                     <p><strong>钱包地址：</strong> ${responseObj.walletAddress}</p>
                     <p><strong>代币：</strong> ${responseObj.tick}</p>
-                    <p><strong>余额(张数)：</strong> ${responseObj.balance/10000000}</p>
+                    <p><strong>余额(张数)：</strong> ${res}</p>
                 `;
                 resultContainer.appendChild(resultElement);
             } else {
