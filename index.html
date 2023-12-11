@@ -34,11 +34,9 @@
 
                 let res = 0
 
-                let ddddd = typeof(responseObj.balance)
-                console.log('类型为：', ddddd)
-                if (responseObj.balance) {
-                    
-                     res = responseObj.balance / 10000000 
+                let num = parseInt(responseObj.balance);
+                if (num > 0) {
+                    res = responseObj.balance / 10000000 
                 }
                 
                 
