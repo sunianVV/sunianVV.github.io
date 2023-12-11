@@ -31,14 +31,20 @@
             if (data.code === 200) {
                 var responseObj = data.responseObj[0];
 
-                let res = responseObj.balance / 10000000
+
+                let res = 0
+                if (responseObj.balance) {
+                     res = responseObj.balance / 10000000 
+                }
+                
                 
                 // 创建并添加结果元素
                 var resultElement = document.createElement("div");
                 resultElement.innerHTML = `
                     <p><strong>钱包地址：</strong> ${responseObj.walletAddress}</p>
                     <p><strong>代币：</strong> ${responseObj.tick}</p>
-                    <p><strong>余额(张数)：</strong> ${res}</p>
+                    <p><strong>余额（币数）：</strong> ${responseObj.balance}</p>
+                    <p><strong>余额 (张数)：</strong> ${res}</p>
                 `;
                 resultContainer.appendChild(resultElement);
             } else {
