@@ -5,9 +5,85 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>查找接口</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        #addressInput {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            width: 80%; /* 让输入框在手机端占据屏幕宽度的80% */
+            box-sizing: border-box; /* 保证宽度包括 padding 和 border */
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #resultContainer {
+            margin: 20px auto;
+            text-align: left;
+            width: 80%; /* 让结果容器在手机端占据屏幕宽度的80% */
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+
+        #resultContainer p {
+            margin: 8px 0;
+        }
+
+        #errorContainer {
+            color: red;
+            margin-top: 10px;
+        }
+
+        /* 媒体查询，针对小屏幕设备应用不同的样式 */
+        @media screen and (max-width: 600px) {
+            #addressInput,
+            #resultContainer {
+                width: 100%; /* 在小屏幕设备上占据整个屏幕宽度 */
+            }
+        }
+    </style>
     <script>
         function findBalance() {
-            var address = document.getElementById("addressInput").value;
+            var addressInput = document.getElementById("addressInput");
+            var address = addressInput.value;
+
+            // 检查地址是否输入
+            if (address.trim() === "") {
+                displayError("请输入地址");
+                return;
+            }
+
+            // 清除之前的错误信息
+            clearError();
+
             var apiUrl = "https://src20.woofswap.finance/src-20/balance?address=" + address;
 
             fetch(apiUrl)
@@ -27,48 +103,42 @@
             // 清空之前的结果
             resultContainer.innerHTML = "";
 
-            // 检查接口返回的code是否为200，表示成功
             if (data.code === 200) {
-                var responseObj = data.responseObj[0];
+                var responseObj = data.responseObj;
 
-
-                let res = 0
-
-                if (responseObj) {
-                    let num = parseInt(responseObj.balance);
-                    if (num > 0) {
-                        res = responseObj.balance / 10000000 
-                    }
-
-                    // 创建并添加结果元素
-                    var resultElement = document.createElement("div");
-                    resultElement.innerHTML = `
-                        <p><strong>钱包地址：</strong> ${responseObj.walletAddress}</p>
-                        <p><strong>代币：</strong> ${responseObj.tick}</p>
-                        <p><strong>余额（币数）：</strong> ${responseObj.balance}</p>
-                        <p><strong>余额 (张数)：</strong> ${res}</p>
-                    `;
-                    resultContainer.appendChild(resultElement);                    
-                }else {
-
-                    let address = document.getElementById("addressInput").value;
+                // 遍历每个项目并显示结果
+                responseObj.forEach(item => {
+					var numberOfSheets = item.balance;
+					if(item.tick == 'shib'){
+					numberOfSheets = item.balance / 10000000;
+					}
+                    if(item.tick == 'bone'){
+					numberOfSheets = item.balance / 10;
+					}
 
                     // 创建并添加结果元素
                     var resultElement = document.createElement("div");
                     resultElement.innerHTML = `
-                        <p><strong>钱包地址：</strong>${address}</p>
-                        <p><strong>余额（币数）：</strong> 0</p>
-                        <p><strong>余额 (张数)：</strong> 0</p>
+                        <p><strong>钱包地址：</strong> ${item.walletAddress}</p>
+                        <p><strong>代币：</strong> ${item.tick}</p>
+                        <p><strong>余额（张数）：</strong> ${numberOfSheets}</p>
+                        <hr>
                     `;
-                    resultContainer.appendChild(resultElement);   
-                }
-                
-                
-                
-                
+                    resultContainer.appendChild(resultElement);
+                });
             } else {
                 alert("接口返回错误：" + data.msg);
             }
+        }
+
+        function displayError(message) {
+            var errorContainer = document.getElementById("errorContainer");
+            errorContainer.textContent = message;
+        }
+
+        function clearError() {
+            var errorContainer = document.getElementById("errorContainer");
+            errorContainer.textContent = "";
         }
     </script>
 </head>
@@ -76,7 +146,11 @@
     <h1>查找接口</h1>
     <label for="addressInput">地址：</label>
     <input type="text" id="addressInput" placeholder="输入地址">
+    <br>
     <button onclick="findBalance()">查找</button>
+
+    <!-- 错误信息容器 -->
+    <div id="errorContainer"></div>
 
     <!-- 用于显示结果的容器 -->
     <div id="resultContainer"></div>
